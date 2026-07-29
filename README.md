@@ -188,7 +188,6 @@ testes automatizados adicionais (não há suíte de testes no código-base).
 - [`docs/arquitetura.md`](docs/arquitetura.md) — arquitetura detalhada
 - [`docs/contrato-api.md`](docs/contrato-api.md) — contrato da API
 - [`docs/evidencias-testes.md`](docs/evidencias-testes.md) — evidências de testes
-- [`docs/roteiro-apresentacao.md`](docs/roteiro-apresentacao.md) — roteiro da apresentação final
 
 ## Contribuição da equipe
 
