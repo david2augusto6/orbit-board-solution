@@ -104,6 +104,13 @@ Serviços definidos no `docker-compose.yml`:
 |--------|------|-----------|
 | GET | `/api/dashboard` | Retorna métricas e tarefas recentes |
 
+
+### Health
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/health` | Verifica a saúde da aplicação |
+
 ### Projetos
 
 | Método | Rota | Descrição |
@@ -187,8 +194,8 @@ testes automatizados adicionais (não há suíte de testes no código-base).
 
 | Integrante | Contribuição |
 |------------|---------------|
-| David Augusto de Oliveira e Silva | DOCKER E CI |
-| Stevão Whinter Marques De Andrade | DOCS |
-| Nelson Enrique Villarreal Gonzalez | APRESENTAÇÃO |
-| Cristiano Peniche Ceccon | APRESENTAÇÃO |
+| David Augusto de Oliveira e Silva | Docker e CI |
+| Stevão Whinter Marques De Andrade | Documentação |
+| Nelson Enrique Villarreal Gonzalez | Testes e Evidências |
+| Cristiano Peniche Ceccon | Apresentação e Roteiro |
 
