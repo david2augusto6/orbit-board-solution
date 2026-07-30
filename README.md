@@ -1,200 +1,200 @@
-# OrbitBoard — Instruções para iniciar o trabalho da equipe
+# OrbitBoard
 
-Este documento descreve como obter o código-fonte base do projeto **OrbitBoard**, criar um repositório próprio da equipe no GitHub e realizar todo o desenvolvimento nesse novo repositório.
+> Trabalho Final — Módulo 5: Integração Full Stack
 
-> **Importante:** o repositório fornecido pelo docente deve ser utilizado apenas como fonte inicial. Cada equipe deverá trabalhar exclusivamente em seu próprio repositório.
 
----
+O objetivo didático do trabalho é revisar e
+praticar a integração entre front-end, back-end/API e infraestrutura conteinerizada
+(Módulo 5 — Integração Full Stack).
 
-## 1. Clonar o repositório base
 
-Abra um terminal e execute:
+## Integrantes da equipe
 
-```bash
-git clone https://github.com/denkencapacitacao/orbit-board-project.git
-```
+- Cristiano Peniche Ceccon
+- David Augusto de Oliveira e Silva
+- Stevão Whinter Marques De Andrade
+- Nelson Enrique Villarreal Gonzalez
 
-Acesse a pasta criada:
 
-```bash
-cd orbit-board-project
-```
+## Descrição da aplicação
 
-Confirme o estado do projeto:
+O **OrbitBoard** é uma aplicação de acompanhamento de projetos, tarefas e equipe (estilo
+kanban/gestão de projetos). Permite cadastrar projetos, criar e filtrar tarefas, mudar o status
+delas e visualizar métricas em um dashboard. 
 
-```bash
-git status
-```
 
----
+## Arquitetura
 
-## 2. Criar o repositório remoto da equipe no GitHub
+- **Front-end:** React 18 + Vite. Consome a API via `src/api/client.js`, com telas de
+  Dashboard, Projetos, Tarefas e Equipe, e tratamento de estados de carregamento, sucesso e erro.
 
-No GitHub:
+- **Back-end/API:** ASP.NET Core (.NET 8), com controllers para Dashboard, Projetos, Tarefas e
+  Membros da equipe. Respostas em JSON, validação com Data Annotations, erros padronizados via
+  `ProblemDetails` e Swagger/OpenAPI habilitado.
 
-1. Clique em **New repository**.
-2. Defina um nome para o repositório da equipe, por exemplo:
+- **Dados:** mantidos em memória no back-end (`WorkspaceService`), recriados a cada reinício da
+  API — sem necessidade de banco de dados.
+  
+- **Infraestrutura:** front-end e back-end executados via Docker Compose — back-end em imagem
+  `.NET`, front-end buildado com Vite e servido via Nginx (ver seção "Via Docker Compose" abaixo).
 
-   ```text
-   orbit-board-equipe-01
-   ```
+## Tecnologias utilizadas
 
-3. Escolha a visibilidade solicitada pelo docente.
-4. Não marque as opções de criação automática de `README`, `.gitignore` ou licença.
-5. Clique em **Create repository**.
-6. Adicione os demais integrantes da equipe como colaboradores.
+- **Front-end:** React 18, Vite 5, react-router-dom
+- **Back-end:** .NET 8 / ASP.NET Core, Swagger (Swashbuckle)
+- **Infraestrutura:** Docker, Docker Compose, Nginx (para servir o build do front-end)
 
-Copie a URL HTTPS do repositório criado. Exemplo:
+## Como executar
 
-```text
-https://github.com/NOME-DO-USUARIO/orbit-board-equipe-01.git
-```
+### Localmente (sem Docker)
 
----
-
-## 3. Subir o código-fonte para o repositório próprio
-
-Verifique o remoto atual:
+**Back-end** (requer .NET SDK 8):
 
 ```bash
-git remote -v
+cd backend
+dotnet restore OrbitBoard.Api.sln
+dotnet run --project OrbitBoard.Api
 ```
 
-Renomeie o repositório do docente para `upstream`:
+A API sobe em `http://localhost:5200`.
+
+**Front-end** (requer Node.js 20+ e npm 10+):
 
 ```bash
-git remote rename origin upstream
+cd frontend
+npm install
+cp .env.example .env   # já vem com VITE_API_URL=http://localhost:5200
+npm run dev
 ```
 
-Adicione o repositório da equipe como novo `origin`:
+O front-end sobe em `http://localhost:5173`.
+
+### Via Docker Compose
 
 ```bash
-git remote add origin https://github.com/NOME-DO-USUARIO/orbit-board-equipe-01.git
+docker compose up --build
 ```
 
-Substitua a URL acima pela URL real do repositório da equipe.
+Serviços definidos no `docker-compose.yml`:
 
-Verifique:
+| Serviço  | Container            | Porta host → container | Observações |
+|----------|----------------------|--------------------------|-------------|
+| backend  | `orbitboard-backend`  | `5200 → 5200`            | `ASPNETCORE_URLS=http://0.0.0.0:5200` |
+| frontend | `orbitboard-frontend` | `8080 → 80`               | build feito com `VITE_API_URL=http://localhost:5200`; servido via Nginx |
 
-```bash
-git remote -v
-```
+- **Backend:** imagem multi-stage (`dotnet/sdk:8.0` para build, `dotnet/aspnet:8.0` para runtime).
+- **Frontend:** imagem multi-stage (`node:22-alpine` para build do Vite, `nginx:1.27-alpine`
+  para servir os arquivos estáticos usando o `nginx.conf` do projeto).
 
-O resultado deverá ser semelhante a:
+## URLs de acesso
 
-```text
-origin    https://github.com/NOME-DO-USUARIO/orbit-board-equipe-01.git (fetch)
-origin    https://github.com/NOME-DO-USUARIO/orbit-board-equipe-01.git (push)
-upstream  https://github.com/denkencapacitacao/orbit-board-project.git (fetch)
-upstream  https://github.com/denkencapacitacao/orbit-board-project.git (push)
-```
+| Serviço      | Local (dev)             | Via Docker Compose        |
+|--------------|--------------------------|-----------------------------|
+| Front-end    | http://localhost:5173    | http://localhost:8080       |
+| Back-end/API | http://localhost:5200    | http://localhost:5200       |
+| Swagger      | http://localhost:5200/swagger | http://localhost:5200/swagger |
+| Health check (API)       | http://localhost:5200/health | http://localhost:5200/health |
+| Health check (front-end) | —                        | http://localhost:8080/health *(via Nginx)* |
 
-Envie o código inicial:
+## Endpoints principais da API
 
-```bash
-git branch -M main
-git push -u origin main
-```
+### Dashboard
 
-Depois, confirme no GitHub se todos os arquivos foram publicados corretamente.
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/api/dashboard` | Retorna métricas e tarefas recentes |
 
----
 
-## 4. Trabalhar somente no repositório da equipe
+### Health
 
-A partir desse momento, todos os integrantes deverão clonar o repositório próprio da equipe:
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/health` | Verifica a saúde da aplicação |
 
-```bash
-git clone https://github.com/NOME-DO-USUARIO/orbit-board-equipe-01.git
-```
+### Projetos
 
-Acesse a pasta:
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/api/projects` | Lista projetos |
+| GET | `/api/projects/{id}` | Consulta um projeto |
+| POST | `/api/projects` | Cria um projeto |
+| PUT | `/api/projects/{id}` | Atualiza um projeto |
+| DELETE | `/api/projects/{id}` | Exclui um projeto (sem tarefas) |
 
-```bash
-cd orbit-board-equipe-01
-```
+### Tarefas
 
-Antes de iniciar uma nova atividade:
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/api/tasks` | Lista e filtra tarefas (`projectId`, `status`, `priority`, `assigneeId`, `search`) |
+| GET | `/api/tasks/{id}` | Consulta uma tarefa |
+| POST | `/api/tasks` | Cria uma tarefa |
+| PUT | `/api/tasks/{id}` | Atualiza uma tarefa |
+| PATCH | `/api/tasks/{id}/status` | Altera somente o status |
+| DELETE | `/api/tasks/{id}` | Exclui uma tarefa |
 
-```bash
-git switch main
-git pull origin main
-```
+### Equipe
 
-Crie uma branch específica:
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/api/team-members` | Lista os integrantes |
 
-```bash
-git switch -c feature/nome-da-atividade
-```
+## Variáveis de ambiente
 
-Exemplo:
+| Variável | Onde é usada | Descrição | Exemplo |
+|----------|--------------|------------|---------|
+| `VITE_API_URL` | Front-end | URL base da API consumida pelo cliente HTTP | `http://localhost:5200` |
+| `ASPNETCORE_ENVIRONMENT` | Back-end | Ambiente de execução do ASP.NET Core | `Development` |
 
-```bash
-git switch -c feature/melhoria-tela-projetos
-```
+Ver `frontend/.env.example`.
 
-Após realizar as alterações:
+## CORS
 
-```bash
-git status
-git add .
-git commit -m "feat: descreve objetivamente a alteração"
-git push -u origin feature/nome-da-atividade
-```
+A política de CORS do back-end (`Program.cs`) libera dinamicamente qualquer origem que contenha
+`localhost` ou `127.0.0.1`, em qualquer porta (`SetIsOriginAllowed`). Isso cobre tanto o modo dev
+(`http://localhost:5173`) quanto o front-end containerizado (`http://localhost:8080`) sem
+precisar listar portas fixas.
 
-Depois, abra um **Pull Request** no GitHub para integrar a branch à branch principal definida pela equipe.
 
----
+## Ajustes realizados pela equipe
 
-## Fluxo resumido
+- CORS ajustado no back-end para liberar dinamicamente qualquer origem `localhost`/`127.0.0.1`
+  (em vez de uma porta fixa), garantindo que o front-end funcione tanto em modo dev (`:5173`)
+  quanto containerizado (`:8080`).
+- Criação do `backend/Dockerfile` (build multi-stage com .NET SDK/ASP.NET runtime) e do
+  `frontend/Dockerfile` (build multi-stage com Node/Vite e runtime Nginx), já que o código-base
+  não vinha com nenhum dos dois.
+- Criação do `docker-compose.yml` orquestrando back-end (porta 5200) e front-end (porta 8080,
+  servido via Nginx), permitindo subir a aplicação completa com `docker compose up --build`.
+- Pipeline de CI simples adicionada via GitHub Actions, validando o build do back-end e do
+  front-end a cada push/PR.
+- Alteração do README.md
 
-```text
-Repositório do docente
-        ↓ git clone
-Cópia local inicial
-        ↓ novo origin
-Repositório da equipe
-        ↓ branches e pull requests
-Desenvolvimento colaborativo
-```
+## CI/CD
 
----
+O repositório inclui um workflow de GitHub Actions (`.github/workflows/ci.yml`) disparado em
+`push` e `pull request` para as branches `main` e `develop` (também pode ser rodado manualmente
+via `workflow_dispatch`). Ele roda dois jobs em paralelo:
 
-## Regras importantes
+| Job | O que faz |
+|-----|-----------|
+| **Validar Backend (.NET)** | `dotnet restore` + `dotnet build` do `OrbitBoard.Api.sln` (.NET 8) |
+| **Validar Frontend (Vite)** | `npm install` + `npm run build` do front-end (Node 22) |
 
-- Não trabalhar diretamente no repositório do docente.
-- Não enviar alterações para o remoto `upstream`.
-- Utilizar o repositório da equipe como `origin`.
-- Criar branches para funcionalidades, correções e documentação.
-- Fazer commits pequenos e com mensagens claras.
-- Atualizar a branch principal antes de iniciar uma nova atividade.
-- Utilizar Pull Requests para revisar e integrar alterações.
-- Garantir que todos os integrantes tenham acesso ao repositório próprio.
+O pipeline garante que back-end e front-end continuam compilando a cada mudança, sem rodar
+testes automatizados adicionais (não há suíte de testes no código-base).
 
----
+## Documentação adicional
 
-## Comandos principais
+- [`docs/arquitetura.md`](docs/arquitetura.md) — arquitetura detalhada
+- [`docs/contrato-api.md`](docs/contrato-api.md) — contrato da API
+- [`docs/evidencias-testes.md`](docs/evidencias-testes.md) — evidências de testes
 
-```bash
-# Clonar o projeto base
-git clone https://github.com/denkencapacitacao/orbit-board-project.git
-cd orbit-board-project
+## Contribuição da equipe
 
-# Manter o repositório do docente como referência
-git remote rename origin upstream
+| Integrante | Contribuição |
+|------------|---------------|
+| David Augusto de Oliveira e Silva | Docker e CI |
+| Stevão Whinter Marques De Andrade | Documentação |
+| Nelson Enrique Villarreal Gonzalez | Testes e Evidências |
+| Cristiano Peniche Ceccon | Apresentação e Roteiro |
 
-# Conectar o repositório da equipe
-git remote add origin https://github.com/NOME-DO-USUARIO/orbit-board-equipe-01.git
-
-# Enviar o código inicial
-git branch -M main
-git push -u origin main
-
-# Criar uma branch de trabalho
-git switch -c feature/nome-da-atividade
-
-# Registrar e enviar alterações
-git add .
-git commit -m "feat: descreve objetivamente a alteração"
-git push -u origin feature/nome-da-atividade
-```
